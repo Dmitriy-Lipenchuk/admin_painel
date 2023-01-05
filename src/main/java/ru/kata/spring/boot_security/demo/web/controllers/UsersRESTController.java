@@ -1,10 +1,8 @@
 package ru.kata.spring.boot_security.demo.web.controllers;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.bcrypt.BCrypt;
@@ -38,28 +36,14 @@ public class UsersRESTController {
     @PutMapping("/admin")
     public void updateUser(@RequestBody User user) {
 
-        user.setPassword(BCrypt.hashpw(user.getPassword(), BCrypt.gensalt(12)));
-
-        if (user.getRoles().size() >= 1) {
-            user.getRoles().get(0).setRoleId();
-            user.setRoles(Collections.singletonList(user.getRoles().get(0)));
-        } else {
-            user.setRoles(Collections.emptyList());
-        }
+        setUserPasswordAndRoles(user);
 
         userService.updateUser(user);
     }
 
     @PostMapping("/admin")
     public void addUser(@RequestBody User user) {
-        user.setPassword(BCrypt.hashpw(user.getPassword(), BCrypt.gensalt(12)));
-
-        if (user.getRoles().size() >= 1) {
-            user.getRoles().get(0).setRoleId();
-            user.setRoles(Collections.singletonList(user.getRoles().get(0)));
-        } else {
-            user.setRoles(Collections.emptyList());
-        }
+        setUserPasswordAndRoles(user);
 
         userService.addUser(user);
     }
@@ -82,5 +66,16 @@ public class UsersRESTController {
         User currentUser = userService.findByUsername(username);
 
         return new ResponseEntity<>(currentUser, HttpStatus.OK);
+    }
+
+    private static void setUserPasswordAndRoles(User user) {
+        user.setPassword(BCrypt.hashpw(user.getPassword(), BCrypt.gensalt(12)));
+
+        if (user.getRoles().size() != 0) {
+            user.getRoles().get(0).setRoleId();
+            user.setRoles(Collections.singletonList(user.getRoles().get(0)));
+        } else {
+            user.setRoles(Collections.emptyList());
+        }
     }
 }
